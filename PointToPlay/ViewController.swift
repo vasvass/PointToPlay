@@ -65,6 +65,31 @@ class ViewController: UIViewController {
             captureSession.sessionPreset = .high
             captureSession.stopRunning()
     }
+    
+    func predict(image: CGImage) {
+        let model = try! VNCoreMLModel (for: Inceptionv3().model)
+        let request = VNCoreMLRequest(model: model, completionHandler: results)
+        let handler = VNSequenceRequestHandler()
+        try! handler.perform([request], on: image)
+    }
+    
+    func results(request: VNRequest, error: Error?) {
+        guard let results = request.results as? [VNClassificationObservation] else {
+            print("No results found")
+            return
+        }
+        guard results.count ! = 0 else {
+            print("No result found")
+            return
+        }
+        let highestConfidenceResult = results.first!
+        let identifier = highestConfidenceResult.identifier.contains(",") ? String(describing: highestConfidenceResult.identifier.split(separator: ",").first!) : highestConfidenceResult.identifier
+        
+        if identifier == objectLabel.text! {
+            currentScore += 1
+            //nextobject()
+        }
+    }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
@@ -73,5 +98,4 @@ class ViewController: UIViewController {
 
 
  }
-
 
